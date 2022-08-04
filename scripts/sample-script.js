@@ -15,7 +15,7 @@ async function main() {
 
   // We get the contract to deploy
   const SafuuX = await hre.ethers.getContractFactory("SafuuX");
-  const safuux = await SafuuX.deploy("Safuu", "Safuu", "0xeeefd63003e0e702cb41cd0043015a6e26ddb38073cc6ffeb0ba3e808ba8c097");
+  const safuux = await SafuuX.deploy("Safuu", "Safuu", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "ipfs://ipfs/....");
 
   await safuux.deployed();
 
