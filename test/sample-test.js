@@ -63,6 +63,7 @@ describe("SafuuX", function () {
 
   it("Should approve Safuu token", async function () {
     await this.safuuToken.approve(this.safuux.address, 1000000000000000);
+    await this.safuuToken.connect(this.WHITE_LIST[0]).approve(this.safuux.address, 1000000000000000);
     await this.safuuToken.mint(this.WHITE_LIST[0].address, 100000);
   });
 
@@ -70,6 +71,7 @@ describe("SafuuX", function () {
     const balance = await ethers.provider.getBalance(
       this.WHITE_LIST[0].address
     );
+    expect(Number(await this.safuuToken.balanceOf(this.WHITE_LIST[0].address))).to.be.greaterThan(Number(0))
     expect(Number(balance)).to.greaterThan(Number(0));
   });
 
@@ -159,10 +161,8 @@ describe("SafuuX", function () {
   it("Should mint from WhiteList", async function () {
     //Check balance before mint
     const fullNodeBalBefore = await this.safuux
-      .connect(this.WHITE_LIST[0])
       .balanceOf(this.WHITE_LIST[0].address, 1);
     const liteNodeBalBefore = await this.safuux
-      .connect(this.WHITE_LIST[0])
       .balanceOf(this.WHITE_LIST[0].address, 2);
 
     expect(fullNodeBalBefore.toNumber()).to.equal(0);
@@ -179,19 +179,17 @@ describe("SafuuX", function () {
 
     //Check balance after mint
     const fullNodeBalAfter = await this.safuux
-      .connect(this.WHITE_LIST[0])
       .balanceOf(this.WHITE_LIST[0].address, 1);
     const liteNodeBalAfter = await this.safuux
-      .connect(this.WHITE_LIST[0])
       .balanceOf(this.WHITE_LIST[0].address, 2);
 
-    expect(fullNodeBalAfter.toNumber()).to.equal(1);
-    expect(liteNodeBalAfter.toNumber()).to.equal(4);
+    expect(fullNodeBalAfter.toNumber()).to.equal(0);
+    expect(liteNodeBalAfter.toNumber()).to.equal(1);
   });
 
   it("Should validate merklee proof", async function () {
     await expect(
-      this.safuux.mintWhiteList(0, 1, this.WHITE_LIST)
+      this.safuux.mintWhiteList(0, 1, generateMerkleProof(this.WHITE_LIST, this.WHITE_LIST[0]))
     ).to.be.revertedWith("Address not eligible - Invalid merkle proof");
   });
 
@@ -206,7 +204,7 @@ describe("SafuuX", function () {
       2
     );
     expect(fullNodeBalAfter.toNumber()).to.equal(0);
-    expect(liteNodeBalAfter.toNumber()).to.equal(4);
+    expect(liteNodeBalAfter.toNumber()).to.equal(3);
   });
 
   it("Should burn tokens in batch", async function () {
@@ -215,6 +213,6 @@ describe("SafuuX", function () {
       this.accounts[0].address,
       2
     );
-    expect(liteNodeBalAfter.toNumber()).to.equal(2);
+    expect(liteNodeBalAfter.toNumber()).to.equal(1);
   });
 });
