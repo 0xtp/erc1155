@@ -26,6 +26,7 @@ describe("SafuuX", function () {
 
   it("Should enable GoldList mint", async function () {
     const saleStatus = this.safuux.setGoldListSaleStatus(true);
+    expect(await this.safuux._isGoldListSaleActive()).to.equal(true);
   })
 
   it("Should approve TestERC20 token", async function () {
@@ -53,8 +54,14 @@ describe("SafuuX", function () {
 
   });
 
+  it("Should NOT mint from Whitelist while GoldList is active only", async function () {
+    await expect(this.safuux.mintWhiteList(0, 2, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
+    .to.be.revertedWith("WhiteList sale not active")
+  });
+
   it("Should enable WhiteList mint", async function () {
     const saleStatus = this.safuux.setWhiteListSaleStatus(true);
+    expect(await this.safuux._isWhiteListSaleActive()).to.equal(true);
   })
 
   it("Should mint from WhiteList", async function () {
