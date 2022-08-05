@@ -10,7 +10,7 @@ contract TestERC20 is ERC20 {
         _mint(msg.sender, 100000);
     }
 
-    function mint() external{
-        _mint(msg.sender, 10000);
+    function mint(address _to, uint256 _count) external{
+        _mint(_to, _count);
     }
 }
