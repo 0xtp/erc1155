@@ -21,16 +21,17 @@ contract SafuuX is ERC1155, Ownable {
     uint256 public FULL_NODE_COST = 500;
     uint256 public FULL_NODE_LIMIT = 500;
     uint256 public LITE_NODE_LIMIT = 1500;
-    uint256 public RESERVED_FULL_NODES = 20;
     uint256 public FULL_NODE_CURRENT_SUPPLY;
     uint256 public LITE_NODE_CURRENT_SUPPLY;
 
     mapping(uint256 => string) public tokenURI;
     mapping(address => bool) public nodesClaimed;
+    mapping(address => uint256) public _fullNodesClaimed;
+    mapping(address => uint256) public _liteNodesClaimed;
 
     modifier mintFullNodeCheck(uint256 _amount) {
         require(
-            balanceOf(msg.sender, 1) + _amount < 2,
+            _fullNodesClaimed[msg.sender] + _amount < 2,
             "Exceeds max 1 Full Node limit per address"
         );
         require(
@@ -46,7 +47,7 @@ contract SafuuX is ERC1155, Ownable {
 
     modifier mintLiteNodeCheck(uint256 _amount) {
         require(
-            balanceOf(msg.sender, 2) + _amount < 6,
+            _liteNodesClaimed[msg.sender] + _amount < 6,
             "Exceeds max 5 Lite Node limit per address"
         );
         require(
@@ -94,6 +95,10 @@ contract SafuuX is ERC1155, Ownable {
             nodesClaimed[msg.sender] == false,
             "Max 1 FullNode, 5 LiteNodes per wallet"
         );
+        require(
+            _fullNodeCount == 0 && _liteNodeCount == 0,
+            "Full node and Lite node count cannot be zero"
+        );
         if (_fullNodeCount > 0) {
             _mintFullNode(_fullNodeCount, _goldListMerkleRoot, merkleProof);
         }
@@ -112,16 +117,16 @@ contract SafuuX is ERC1155, Ownable {
             nodesClaimed[msg.sender] == false,
             "Max 1 FullNode, 5 LiteNodes per wallet"
         );
+        require(
+            _fullNodeCount == 0 && _liteNodeCount == 0,
+            "Full node and Lite node count cannot be zero"
+        );
         if (_fullNodeCount > 0) {
             _mintFullNode(_fullNodeCount, _whiteListMerkleRoot, merkleProof);
         }
         if (_liteNodeCount > 0) {
             _mintLiteNode(_liteNodeCount, _whiteListMerkleRoot, merkleProof);
         }
-    }
-
-    function mint(uint256 id, uint256 count) external {
-        _mint(msg.sender, id, count, "");
     }
 
     function _mintFullNode(
@@ -137,11 +142,13 @@ contract SafuuX is ERC1155, Ownable {
 
         FULL_NODE_CURRENT_SUPPLY = FULL_NODE_CURRENT_SUPPLY + _amount;
         if (
-            balanceOf(msg.sender, 1) + _amount == 1 &&
-            balanceOf(msg.sender, 2) == 5
+            _fullNodesClaimed[msg.sender] + _amount == 1 &&
+            _liteNodesClaimed[msg.sender] == 5
         ) {
             nodesClaimed[msg.sender] = true;
         }
+
+        _fullNodesClaimed[msg.sender] = _fullNodesClaimed[msg.sender] + _amount;
         IERC20(_safuuTokenAddress).transferFrom(
             msg.sender,
             address(this),
@@ -164,11 +171,13 @@ contract SafuuX is ERC1155, Ownable {
         LITE_NODE_CURRENT_SUPPLY = LITE_NODE_CURRENT_SUPPLY + _amount;
 
         if (
-            balanceOf(msg.sender, 2) + _amount == 5 &&
-            balanceOf(msg.sender, 1) == 1
+            _liteNodesClaimed[msg.sender] + _amount == 5 &&
+            _fullNodesClaimed[msg.sender] == 1
         ) {
             nodesClaimed[msg.sender] = true;
         }
+
+        _liteNodesClaimed[msg.sender] = _liteNodesClaimed[msg.sender] + _amount;
         IERC20(_safuuTokenAddress).transferFrom(
             msg.sender,
             address(this),
@@ -216,10 +225,12 @@ contract SafuuX is ERC1155, Ownable {
     }
 
     function setGoldListSaleStatus(bool _isActive) external onlyOwner {
+        _isWhiteListSaleActive = false;
         _isGoldListSaleActive = _isActive;
     }
 
     function setWhiteListSaleStatus(bool _isActive) external onlyOwner {
+        _isGoldListSaleActive = false;
         _isWhiteListSaleActive = _isActive;
     }
 
