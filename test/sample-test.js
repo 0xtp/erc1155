@@ -75,6 +75,12 @@ describe("SafuuX", function () {
     expect(await this.safuux._isWhiteListSaleActive()).to.equal(true);
   })
 
+
+  it('Can change Token URI', async function() {
+    await this.safuux.setURI(1, 'https://safuu.com')
+    await expect(await this.safuux.uri(1)).to.equal('https://safuu.com')
+  })
+
   it("Should mint from WhiteList", async function () {
 
     //Check balance before mint
