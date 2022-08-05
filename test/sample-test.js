@@ -3,48 +3,78 @@ const { ethers } = require("hardhat");
 
 describe("SafuuX", function () {
 
-  before(async function(){
+  before(async function () {
     this.accounts = await ethers.getSigners();
 
+    const TestERC20 = await ethers.getContractFactory("TestERC20");
+    this.testERC20 = await TestERC20.deploy();
+    await this.testERC20.deployed();
+
     const SafuuX = await ethers.getContractFactory("SafuuX");
-    this.safuux = await SafuuX.deploy("Safuu", "Safuu", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "ipfs://ipfs/....");
+    this.safuux = await SafuuX.deploy("Safuu", "Safuu", this.testERC20.address, "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "ipfs://ipfs/....");
     await this.safuux.deployed();
+
+    console.log("Account -", this.accounts[0].address);
   })
-  
-  it("Should check name and symbol", async function(){
+
+  it("Should check name and symbol", async function () {
     const tokenName = await this.safuux.name();
     const tokenSymbol = await this.safuux.symbol();
     expect(tokenName).to.equal("Safuu");
     expect(tokenSymbol).to.equal("Safuu");
   })
 
-  it("Should mint Full Node tokens", async function () {
+  it("Should enable GoldList mint", async function () {
+    const saleStatus = this.safuux.setGoldListSaleStatus(true);
+  })
+
+  it("Should approve TestERC20 token", async function () {
+    this.testERC20.approve(this.safuux.address, 1000000000000000);
+  })
+
+  it("Should mint from GoldList", async function () {
 
     //Check balance before mint
-    const balBefore = await this.safuux.balanceOf(this.accounts[0].address, 1);
-    expect(balBefore.toNumber()).to.equal(0);
+    const fullNodeBalBefore = await this.safuux.balanceOf(this.accounts[0].address, 1);
+    const liteNodeBalBefore = await this.safuux.balanceOf(this.accounts[0].address, 2);
     
-    //Mint Full Node with supply "1"
-    const tx = await this.safuux.mintFullNode(["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0","0x7e0eefeb2d8740528b8f598997a219669f0842302d3c573e9bb7262be3387e63","0xf4ca8532861558e29f9858a3804245bb30f0303cc71e4192e41546237b6ce58b"]);
+    expect(fullNodeBalBefore.toNumber()).to.equal(0);
+    expect(liteNodeBalBefore.toNumber()).to.equal(0);
+
+    //Mint 1 Full Node and 3 Lite Nodes
+    const tx = await this.safuux.mintGoldList(1, 3, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]);
 
     //Check balance after mint
-    const balAfter = await this.safuux.balanceOf(this.accounts[0].address, 1);
-    expect(balAfter.toNumber()).to.equal(1);
+    const fullNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 1);
+    const liteNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
+    
+    expect(fullNodeBalAfter.toNumber()).to.equal(1);
+    expect(liteNodeBalAfter.toNumber()).to.equal(3);
 
   });
 
-  it("Should mint Lite Node tokens", async function () {
+  it("Should enable WhiteList mint", async function () {
+    const saleStatus = this.safuux.setWhiteListSaleStatus(true);
+  })
+
+  it("Should mint from WhiteList", async function () {
 
     //Check balance before mint
-    const balBefore = await this.safuux.balanceOf(this.accounts[0].address, 2);
-    expect(balBefore.toNumber()).to.equal(0);
+    const fullNodeBalBefore = await this.safuux.balanceOf(this.accounts[0].address, 1);
+    const liteNodeBalBefore = await this.safuux.balanceOf(this.accounts[0].address, 2);
     
-    //Mint Lite Node with supply "5"
-    const tx = await this.safuux.mintLiteNode(5, ["0x00314e565e0574cb412563df634608d76f5c59d9f817e85966100ec1d48005c0","0x7e0eefeb2d8740528b8f598997a219669f0842302d3c573e9bb7262be3387e63","0xf4ca8532861558e29f9858a3804245bb30f0303cc71e4192e41546237b6ce58b"]);
+    expect(fullNodeBalBefore.toNumber()).to.equal(1);
+    expect(liteNodeBalBefore.toNumber()).to.equal(3);
 
-    //Check balance after mint
-    const balAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
-    expect(balAfter.toNumber()).to.equal(5);
+   //Mint 0 Full Node and 2 Lite Nodes
+   const tx = await this.safuux.mintWhiteList(0, 2, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]);
+
+   //Check balance after mint
+   const fullNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 1);
+   const liteNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
+   
+   expect(fullNodeBalAfter.toNumber()).to.equal(1);
+   expect(liteNodeBalAfter.toNumber()).to.equal(5);
 
   });
 });
