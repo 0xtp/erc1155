@@ -96,7 +96,7 @@ contract SafuuX is ERC1155, Ownable {
             "Max 1 FullNode, 5 LiteNodes per wallet"
         );
         require(
-            _fullNodeCount == 0 && _liteNodeCount == 0,
+            _fullNodeCount > 0 || _liteNodeCount > 0,
             "Full node and Lite node count cannot be zero"
         );
         if (_fullNodeCount > 0) {
@@ -118,7 +118,7 @@ contract SafuuX is ERC1155, Ownable {
             "Max 1 FullNode, 5 LiteNodes per wallet"
         );
         require(
-            _fullNodeCount == 0 && _liteNodeCount == 0,
+            _fullNodeCount > 0 || _liteNodeCount > 0,
             "Full node and Lite node count cannot be zero"
         );
         if (_fullNodeCount > 0) {
