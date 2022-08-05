@@ -50,7 +50,9 @@ describe("SafuuX", function () {
     expect(await this.safuux._whiteListMerkleRoot()).to.equal(
       generateMerkleRoot(this.WHITE_LIST)
     );
-    expect(await this.safuux._goldListMerkleRoot()).to.not.equal(await this.safuux._whiteListMerkleRoot());
+    expect(await this.safuux._goldListMerkleRoot()).to.not.equal(
+      await this.safuux._whiteListMerkleRoot()
+    );
   });
 
   it("Should enable GoldList mint", async function () {
@@ -64,16 +66,23 @@ describe("SafuuX", function () {
     await this.safuuToken.mint(this.WHITE_LIST[0].address, 100000);
   });
 
-
-  it('Whitelist has a ETH blanace', async function() {
-    const balance = await ethers.provider.getBalance(this.WHITE_LIST[0].address)
+  it("Whitelist has a ETH blanace", async function () {
+    const balance = await ethers.provider.getBalance(
+      this.WHITE_LIST[0].address
+    );
     expect(Number(balance)).to.greaterThan(Number(0));
-  })
+  });
 
   it("Should mint from GoldList", async function () {
     //Check balance before mint
-    const fullNodeBalBefore = await this.safuux.balanceOf(this.GOLD_LIST[0].address, 1);
-    const liteNodeBalBefore = await this.safuux.balanceOf(this.GOLD_LIST[0].address, 2);
+    const fullNodeBalBefore = await this.safuux.balanceOf(
+      this.GOLD_LIST[0].address,
+      1
+    );
+    const liteNodeBalBefore = await this.safuux.balanceOf(
+      this.GOLD_LIST[0].address,
+      2
+    );
 
     expect(fullNodeBalBefore.toNumber()).to.equal(0);
     expect(liteNodeBalBefore.toNumber()).to.equal(0);
@@ -86,8 +95,14 @@ describe("SafuuX", function () {
     );
 
     //Check balance after mint
-    const fullNodeBalAfter = await this.safuux.balanceOf(this.GOLD_LIST[0].address, 1);
-    const liteNodeBalAfter = await this.safuux.balanceOf(this.GOLD_LIST[0].address, 2);
+    const fullNodeBalAfter = await this.safuux.balanceOf(
+      this.GOLD_LIST[0].address,
+      1
+    );
+    const liteNodeBalAfter = await this.safuux.balanceOf(
+      this.GOLD_LIST[0].address,
+      2
+    );
 
     expect(fullNodeBalAfter.toNumber()).to.equal(1);
     expect(liteNodeBalAfter.toNumber()).to.equal(3);
@@ -95,7 +110,11 @@ describe("SafuuX", function () {
 
   it("Should NOT be able to mint more than 1 Full Node", async function () {
     await expect(
-      this.safuux.mintGoldList(1, 3, generateMerkleProof(this.GOLD_LIST, this.GOLD_LIST[0]))
+      this.safuux.mintGoldList(
+        1,
+        3,
+        generateMerkleProof(this.GOLD_LIST, this.GOLD_LIST[0])
+      )
     ).to.be.revertedWith("Exceeds max 1 Full Node limit per address");
   });
 
@@ -108,13 +127,21 @@ describe("SafuuX", function () {
       "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc"
     );
     await expect(
-      this.safuux.mintGoldList(1, 0, generateMerkleProof(this.GOLD_LIST, this.GOLD_LIST[0]))
+      this.safuux.mintGoldList(
+        1,
+        0,
+        generateMerkleProof(this.GOLD_LIST, this.GOLD_LIST[0])
+      )
     ).to.be.revertedWith("Exceeds max 1 Full Node limit per address");
   });
 
   it("Should NOT mint from Whitelist while GoldList is active only", async function () {
     await expect(
-      this.safuux.mintWhiteList(0, 2, generateMerkleProof(this.WHITE_LIST, this.WHITE_LIST[0]))
+      this.safuux.mintWhiteList(
+        0,
+        2,
+        generateMerkleProof(this.WHITE_LIST, this.WHITE_LIST[0])
+      )
     ).to.be.revertedWith("WhiteList sale not active");
   });
 
@@ -131,24 +158,32 @@ describe("SafuuX", function () {
 
   it("Should mint from WhiteList", async function () {
     //Check balance before mint
-    const fullNodeBalBefore = await this.safuux.connect(this.WHITE_LIST[0]).balanceOf(
-      this.WHITE_LIST[0].address,
-      1
-    );
-    const liteNodeBalBefore = await this.safuux.connect(this.WHITE_LIST[0]).balanceOf(
-      this.WHITE_LIST[0].address,
-      2
-    );
+    const fullNodeBalBefore = await this.safuux
+      .connect(this.WHITE_LIST[0])
+      .balanceOf(this.WHITE_LIST[0].address, 1);
+    const liteNodeBalBefore = await this.safuux
+      .connect(this.WHITE_LIST[0])
+      .balanceOf(this.WHITE_LIST[0].address, 2);
 
     expect(fullNodeBalBefore.toNumber()).to.equal(0);
     expect(liteNodeBalBefore.toNumber()).to.equal(0);
 
     //Mint 0 Full Node and 2 Lite Nodes
-    const tx = await this.safuux.connect(this.WHITE_LIST[0]).mintWhiteList(0, 1, generateMerkleProof(this.WHITE_LIST, this.WHITE_LIST[0]));
+    const tx = await this.safuux
+      .connect(this.WHITE_LIST[0])
+      .mintWhiteList(
+        0,
+        1,
+        generateMerkleProof(this.WHITE_LIST, this.WHITE_LIST[0])
+      );
 
     //Check balance after mint
-    const fullNodeBalAfter = await this.safuux.connect(this.WHITE_LIST[0]).balanceOf(this.WHITE_LIST[0].address, 1);
-    const liteNodeBalAfter = await this.safuux.connect(this.WHITE_LIST[0]).balanceOf(this.WHITE_LIST[0].address, 2);
+    const fullNodeBalAfter = await this.safuux
+      .connect(this.WHITE_LIST[0])
+      .balanceOf(this.WHITE_LIST[0].address, 1);
+    const liteNodeBalAfter = await this.safuux
+      .connect(this.WHITE_LIST[0])
+      .balanceOf(this.WHITE_LIST[0].address, 2);
 
     expect(fullNodeBalAfter.toNumber()).to.equal(1);
     expect(liteNodeBalAfter.toNumber()).to.equal(4);
