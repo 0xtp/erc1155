@@ -24,6 +24,7 @@ describe("SafuuX", function () {
   })
 
   it("Should enable GoldList mint", async function () {
+    expect(await this.safuux._isGoldListSaleActive()).to.equal(false);
     const saleStatus = await this.safuux.setGoldListSaleStatus(true);
     expect(await this.safuux._isGoldListSaleActive()).to.equal(true);
   })
@@ -71,6 +72,7 @@ describe("SafuuX", function () {
   });
 
   it("Should enable WhiteList mint", async function () {
+    expect(await this.safuux._isWhiteListSaleActive()).to.equal(false);
     const saleStatus = this.safuux.setWhiteListSaleStatus(true);
     expect(await this.safuux._isWhiteListSaleActive()).to.equal(true);
   })
@@ -106,5 +108,19 @@ describe("SafuuX", function () {
     await expect(this.safuux.mintWhiteList(0, 1, ["0x6931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
     .to.be.revertedWith("Address not eligible - Invalid merkle proof");
 
+  })
+
+  it('Should burn tokens', async function(){
+    await this.safuux.burn(1, 1);
+    const fullNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 1);
+    const liteNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
+    expect(fullNodeBalAfter.toNumber()).to.equal(0);
+    expect(liteNodeBalAfter.toNumber()).to.equal(4);
+  })
+
+  it('Should burn tokens in batch', async function(){
+    await this.safuux.burnBatch([2], [2]);
+    const liteNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
+    expect(liteNodeBalAfter.toNumber()).to.equal(2);
   })
 });
