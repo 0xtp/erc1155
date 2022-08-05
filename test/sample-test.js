@@ -6,12 +6,11 @@ describe("SafuuX", function () {
   before(async function () {
     this.accounts = await ethers.getSigners();
 
-    const TestERC20 = await ethers.getContractFactory("TestERC20");
-    this.testERC20 = await TestERC20.deploy();
-    await this.testERC20.deployed();
-
+    const SafuuToken = await ethers.getContractFactory("TestERC20");
+    this.safuuToken = await SafuuToken.deploy();
+    await this.safuuToken.deployed();
     const SafuuX = await ethers.getContractFactory("SafuuX");
-    this.safuux = await SafuuX.deploy("Safuu", "Safuu", this.testERC20.address, "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "ipfs://ipfs/....");
+    this.safuux = await SafuuX.deploy("Safuu", "Safuu", this.safuuToken.address, "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "ipfs://ipfs/....");
     await this.safuux.deployed();
 
     console.log("Account -", this.accounts[0].address);
@@ -25,12 +24,13 @@ describe("SafuuX", function () {
   })
 
   it("Should enable GoldList mint", async function () {
-    const saleStatus = this.safuux.setGoldListSaleStatus(true);
+    const saleStatus = await this.safuux.setGoldListSaleStatus(true);
     expect(await this.safuux._isGoldListSaleActive()).to.equal(true);
   })
+ 
 
-  it("Should approve TestERC20 token", async function () {
-    this.testERC20.approve(this.safuux.address, 1000000000000000);
+  it("Should approve Safuu token", async function () {
+    await this.safuuToken.approve(this.safuux.address, 1000000000000000);
   })
 
   it("Should mint from GoldList", async function () {
@@ -53,6 +53,17 @@ describe("SafuuX", function () {
     expect(liteNodeBalAfter.toNumber()).to.equal(3);
 
   });
+
+  it("Should NOT be able to mint more than 1 Full Node", async function() {
+    await expect(this.safuux.mintGoldList(1, 3, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
+    .to.be.revertedWith("Exceeds max 1 Full Node limit per address");
+  })
+
+  it("Should NOT be able to mint more than 1 Full Node with Transfer", async function() {
+    await this.safuux.safeTransferFrom(this.accounts[0].address, this.accounts[1].address, 1,1, "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc");
+    await expect(this.safuux.mintGoldList(1, 0, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
+    .to.be.revertedWith("Exceeds max 1 Full Node limit per address");
+  })
 
   it("Should NOT mint from Whitelist while GoldList is active only", async function () {
     await expect(this.safuux.mintWhiteList(0, 2, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
