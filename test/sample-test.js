@@ -91,14 +91,20 @@ describe("SafuuX", function () {
     expect(liteNodeBalBefore.toNumber()).to.equal(3);
 
    //Mint 0 Full Node and 2 Lite Nodes
-   const tx = await this.safuux.mintWhiteList(0, 2, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]);
+   const tx = await this.safuux.mintWhiteList(0, 1, ["0x5931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]);
 
    //Check balance after mint
    const fullNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 1);
    const liteNodeBalAfter = await this.safuux.balanceOf(this.accounts[0].address, 2);
    
    expect(fullNodeBalAfter.toNumber()).to.equal(1);
-   expect(liteNodeBalAfter.toNumber()).to.equal(5);
+   expect(liteNodeBalAfter.toNumber()).to.equal(4);
 
   });
+
+  it('Should validate merklee proof', async function() {
+    await expect(this.safuux.mintWhiteList(0, 1, ["0x6931b4ed56ace4c46b68524cb5bcbf4195f1bbaacbe5228fbd090546c88dd229", "0x343750465941b29921f50a28e0e43050e5e1c2611a3ea8d7fe1001090d5e1436", "0x28ee50ccca7572e60f382e915d3cc323c3cb713b263673ba830ab179d0e5d57f"]))
+    .to.be.revertedWith("Address not eligible - Invalid merkle proof");
+
+  })
 });
