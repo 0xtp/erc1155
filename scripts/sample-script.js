@@ -13,12 +13,15 @@ async function main() {
   // manually to make sure everything is compiled
   // await hre.run('compile');
 
+  const TestERC20 = await hre.ethers.getContractFactory("TestERC20");
+  const testERC20 = await TestERC20.deploy();
+  await testERC20.deployed();
+  console.log("TestERC20 deployed to:", testERC20.address);
+
   // We get the contract to deploy
   const SafuuX = await hre.ethers.getContractFactory("SafuuX");
-  const safuux = await SafuuX.deploy("Safuu", "Safuu", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "0x77e700f03437c8e81143fabca89ab927d28d5207bf6ed00aa9b4d8ed5cdd6f7c", "ipfs://ipfs/....");
-
+  const safuux = await SafuuX.deploy("Safuu", "Safuu", testERC20.address, "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc", "ipfs://ipfs/....");
   await safuux.deployed();
-
   console.log("SafuuX deployed to:", safuux.address);
 }
 
