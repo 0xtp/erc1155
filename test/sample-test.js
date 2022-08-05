@@ -21,6 +21,9 @@ describe("SafuuX", function () {
     const tokenSymbol = await this.safuux.symbol();
     expect(tokenName).to.equal("Safuu");
     expect(tokenSymbol).to.equal("Safuu");
+    expect(await this.safuux._merkleTreeInputURI()).to.equal("ipfs://ipfs/....");
+    expect(await this.safuux._goldListMerkleRoot()).to.equal("0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc");
+    expect(await this.safuux._whiteListMerkleRoot()).to.equal("0x74a2480e451fb1ec5b00c02140086c04994bc9366824b93aa8b1be2ececf9dcc");
   })
 
   it("Should enable GoldList mint", async function () {
