@@ -194,7 +194,11 @@ describe("SafuuX", function () {
   });
 
   it("Should burn tokens", async function () {
-    await this.safuux.burn(1, 1);
+    const currentLiteNodeBalance = await this.safuux.balanceOf(
+      this.accounts[0].address,
+      2
+    );
+    await this.safuux.burn(2, 1);
     const fullNodeBalAfter = await this.safuux.balanceOf(
       this.accounts[0].address,
       1
@@ -203,16 +207,21 @@ describe("SafuuX", function () {
       this.accounts[0].address,
       2
     );
+    
     expect(fullNodeBalAfter.toNumber()).to.equal(0);
-    expect(liteNodeBalAfter.toNumber()).to.equal(3);
+    expect(liteNodeBalAfter.toNumber()).to.equal(currentLiteNodeBalance - 1);
   });
 
   it("Should burn tokens in batch", async function () {
+    const currentLiteNodeBalance = await this.safuux.balanceOf(
+      this.accounts[0].address,
+      2
+    );
     await this.safuux.burnBatch([2], [2]);
     const liteNodeBalAfter = await this.safuux.balanceOf(
       this.accounts[0].address,
       2
     );
-    expect(liteNodeBalAfter.toNumber()).to.equal(1);
+    expect(liteNodeBalAfter.toNumber()).to.equal(currentLiteNodeBalance - 2);
   });
 });
